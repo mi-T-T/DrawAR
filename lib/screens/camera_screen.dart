@@ -22,6 +22,7 @@ class _CameraScreenState extends State<CameraScreen> {
 
   final TransformationController _transformationController =
       TransformationController();
+  TapDownDetails? _doubleTapDetails;
 
   File? _originalImage;
 
@@ -104,19 +105,41 @@ class _CameraScreenState extends State<CameraScreen> {
           /// Ảnh overlay
           if (_originalImage != null)
             Center(
-              child: InteractiveViewer(
-                transformationController: _transformationController,
-                minScale: 0.2,
-                maxScale: 8,
-                panEnabled: true,
-                scaleEnabled: true,
-                child: Opacity(
-                  opacity: _opacity,
-                  child: _isSketchMode
-                      ? (_processedImage != null
-                            ? Image.memory(_processedImage!)
-                            : const Center(child: CircularProgressIndicator()))
-                      : Image.file(_originalImage!),
+              child: GestureDetector(
+                onDoubleTapDown: (details) {
+                  _doubleTapDetails = details;
+                },
+
+                onDoubleTap: () {
+                  if (_doubleTapDetails == null) return;
+
+                  final position = _doubleTapDetails!.localPosition;
+
+                  final matrix = Matrix4.identity()
+                    ..translate(-position.dx, -position.dy)
+                    ..scale(2.0);
+
+                  _transformationController.value = matrix;
+                },
+
+                child: InteractiveViewer(
+                  transformationController: _transformationController,
+                  minScale: 0.5,
+                  maxScale: 5,
+                  boundaryMargin: const EdgeInsets.all(20),
+                  constrained: false,
+                  panEnabled: true,
+                  scaleEnabled: true,
+                  child: Opacity(
+                    opacity: _opacity,
+                    child: _isSketchMode
+                        ? (_processedImage != null
+                              ? Image.memory(_processedImage!)
+                              : const Center(
+                                  child: CircularProgressIndicator(),
+                                ))
+                        : Image.file(_originalImage!),
+                  ),
                 ),
               ),
             ),
