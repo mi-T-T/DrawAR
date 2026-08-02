@@ -7,6 +7,10 @@ import 'package:flutter/material.dart';
 import '../services/camera_service.dart';
 import '../services/image_service.dart';
 import '../services/sketch_service.dart';
+import '../widgets/control_panel.dart';
+import '../widgets/image_overlay.dart';
+
+import '../widgets/gesture_overlay.dart';
 
 class CameraScreen extends StatefulWidget {
   const CameraScreen({super.key});
@@ -30,7 +34,11 @@ class _CameraScreenState extends State<CameraScreen> {
 
   bool _isSketchMode = false;
 
+  bool _isFlipped = false;
+
   double _opacity = 0.7;
+
+  double _scale = 1.0;
 
   double _threshold = 120;
 
@@ -105,41 +113,19 @@ class _CameraScreenState extends State<CameraScreen> {
           /// Ảnh overlay
           if (_originalImage != null)
             Center(
-              child: GestureDetector(
+              child: GestureOverlay(
+                transformationController: _transformationController,
+                doubleTapDetails: _doubleTapDetails,
                 onDoubleTapDown: (details) {
                   _doubleTapDetails = details;
                 },
-
-                onDoubleTap: () {
-                  if (_doubleTapDetails == null) return;
-
-                  final position = _doubleTapDetails!.localPosition;
-
-                  final matrix = Matrix4.identity()
-                    ..translate(-position.dx, -position.dy)
-                    ..scale(2.0);
-
-                  _transformationController.value = matrix;
-                },
-
-                child: InteractiveViewer(
-                  transformationController: _transformationController,
-                  minScale: 0.5,
-                  maxScale: 5,
-                  boundaryMargin: const EdgeInsets.all(20),
-                  constrained: false,
-                  panEnabled: true,
-                  scaleEnabled: true,
-                  child: Opacity(
-                    opacity: _opacity,
-                    child: _isSketchMode
-                        ? (_processedImage != null
-                              ? Image.memory(_processedImage!)
-                              : const Center(
-                                  child: CircularProgressIndicator(),
-                                ))
-                        : Image.file(_originalImage!),
-                  ),
+                child: ImageOverlay(
+                  originalImage: _originalImage,
+                  processedImage: _processedImage,
+                  isSketchMode: _isSketchMode,
+                  opacity: _opacity,
+                  scale: _scale,
+                  isFlipped: _isFlipped,
                 ),
               ),
             ),
@@ -149,83 +135,54 @@ class _CameraScreenState extends State<CameraScreen> {
             left: 10,
             right: 10,
             bottom: 20,
-            child: Card(
-              color: Colors.black54,
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    /// Sketch ON/OFF
-                    SwitchListTile(
-                      title: const Text(
-                        "Sketch Mode",
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      value: _isSketchMode,
-                      onChanged: (value) async {
-                        setState(() {
-                          _isSketchMode = value;
-                        });
+            child: ControlPanel(
+              isSketchMode: _isSketchMode,
+              opacity: _opacity,
+              scale: _scale,
+              threshold: _threshold,
+              isFlipped: _isFlipped,
 
-                        if (_originalImage == null) return;
+              onFlipPressed: () {
+                setState(() {
+                  _isFlipped = !_isFlipped;
+                });
+              },
 
-                        if (_isSketchMode) {
-                          await _updateSketch();
-                        } else {
-                          setState(() {
-                            _processedImage = null;
-                          });
-                        }
-                      },
-                    ),
+              onSketchChanged: (value) async {
+                setState(() {
+                  _isSketchMode = value;
+                });
 
-                    const SizedBox(height: 10),
+                if (_originalImage == null) return;
 
-                    const Text(
-                      "Opacity",
-                      style: TextStyle(color: Colors.white),
-                    ),
+                if (_isSketchMode) {
+                  await _updateSketch();
+                } else {
+                  setState(() {
+                    _processedImage = null;
+                  });
+                }
+              },
 
-                    Slider(
-                      value: _opacity,
-                      min: 0.2,
-                      max: 1,
-                      divisions: 8,
-                      label: (_opacity * 100).toInt().toString(),
-                      onChanged: (value) {
-                        setState(() {
-                          _opacity = value;
-                        });
-                      },
-                    ),
+              onOpacityChanged: (value) {
+                setState(() {
+                  _opacity = value;
+                });
+              },
 
-                    if (_isSketchMode) ...[
-                      const SizedBox(height: 10),
+              onScaleChanged: (value) {
+                setState(() {
+                  _scale = value;
+                });
+              },
 
-                      Text(
-                        "Edge Threshold : ${_threshold.toInt()}",
-                        style: const TextStyle(color: Colors.white),
-                      ),
+              onThresholdChanged: (value) async {
+                setState(() {
+                  _threshold = value;
+                });
 
-                      Slider(
-                        value: _threshold,
-                        min: 20,
-                        max: 250,
-                        divisions: 230,
-                        label: _threshold.toInt().toString(),
-                        onChanged: (value) async {
-                          setState(() {
-                            _threshold = value;
-                          });
-
-                          await _updateSketch();
-                        },
-                      ),
-                    ],
-                  ],
-                ),
-              ),
+                await _updateSketch();
+              },
             ),
           ),
           Positioned(
