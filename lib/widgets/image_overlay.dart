@@ -9,6 +9,7 @@ class ImageOverlay extends StatelessWidget {
   final bool isSketchMode;
   final double opacity;
   final double scale;
+  final double rotation;
   final bool isFlipped;
 
   const ImageOverlay({
@@ -18,6 +19,7 @@ class ImageOverlay extends StatelessWidget {
     required this.isSketchMode,
     required this.opacity,
     required this.scale,
+    required this.rotation,
     required this.isFlipped,
   });
 
@@ -29,7 +31,9 @@ class ImageOverlay extends StatelessWidget {
 
     return Transform(
       alignment: Alignment.center,
-      transform: Matrix4.identity()..scale(isFlipped ? -1.0 : 1.0, 1.0),
+      transform: Matrix4.identity()
+        ..scale(isFlipped ? -1.0 : 1.0, 1.0)
+        ..rotateZ(rotation * 3.1415926535 / 180),
       child: Transform.scale(
         scale: scale,
         child: Opacity(

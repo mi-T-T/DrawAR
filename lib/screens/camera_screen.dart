@@ -34,11 +34,19 @@ class _CameraScreenState extends State<CameraScreen> {
 
   bool _isSketchMode = false;
 
+  bool _isFlashOn = false;
+
   bool _isFlipped = false;
+
+  bool _isLocked = false;
+
+  bool _isPanelExpanded = true;
 
   double _opacity = 0.7;
 
   double _scale = 1.0;
+
+  double _rotation = 0;
 
   double _threshold = 120;
 
@@ -116,6 +124,9 @@ class _CameraScreenState extends State<CameraScreen> {
               child: GestureOverlay(
                 transformationController: _transformationController,
                 doubleTapDetails: _doubleTapDetails,
+
+                isLocked: _isLocked,
+
                 onDoubleTapDown: (details) {
                   _doubleTapDetails = details;
                 },
@@ -125,6 +136,7 @@ class _CameraScreenState extends State<CameraScreen> {
                   isSketchMode: _isSketchMode,
                   opacity: _opacity,
                   scale: _scale,
+                  rotation: _rotation,
                   isFlipped: _isFlipped,
                 ),
               ),
@@ -139,12 +151,28 @@ class _CameraScreenState extends State<CameraScreen> {
               isSketchMode: _isSketchMode,
               opacity: _opacity,
               scale: _scale,
+              rotation: _rotation,
               threshold: _threshold,
               isFlipped: _isFlipped,
+              isLocked: _isLocked,
+
+              isExpanded: _isPanelExpanded,
+
+              onToggleExpanded: () {
+                setState(() {
+                  _isPanelExpanded = !_isPanelExpanded;
+                });
+              },
 
               onFlipPressed: () {
                 setState(() {
                   _isFlipped = !_isFlipped;
+                });
+              },
+
+              onLockPressed: () {
+                setState(() {
+                  _isLocked = !_isLocked;
                 });
               },
 
@@ -176,6 +204,12 @@ class _CameraScreenState extends State<CameraScreen> {
                 });
               },
 
+              onRotationChanged: (value) {
+                setState(() {
+                  _rotation = value;
+                });
+              },
+
               onThresholdChanged: (value) async {
                 setState(() {
                   _threshold = value;
@@ -188,12 +222,32 @@ class _CameraScreenState extends State<CameraScreen> {
           Positioned(
             top: 15,
             right: 15,
-            child: FloatingActionButton.small(
-              heroTag: "reset",
-              onPressed: () {
-                _transformationController.value = Matrix4.identity();
-              },
-              child: const Icon(Icons.refresh),
+            child: Column(
+              children: [
+                FloatingActionButton.small(
+                  heroTag: "flash",
+                  onPressed: () async {
+                    final enable = !_isFlashOn;
+
+                    await _cameraService.setFlash(enable);
+
+                    setState(() {
+                      _isFlashOn = enable;
+                    });
+                  },
+                  child: Icon(_isFlashOn ? Icons.flash_on : Icons.flash_off),
+                ),
+
+                const SizedBox(height: 10),
+
+                FloatingActionButton.small(
+                  heroTag: "reset",
+                  onPressed: () {
+                    _transformationController.value = Matrix4.identity();
+                  },
+                  child: const Icon(Icons.refresh),
+                ),
+              ],
             ),
           ),
         ],

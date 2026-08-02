@@ -5,6 +5,7 @@ class GestureOverlay extends StatelessWidget {
   final TransformationController transformationController;
   final TapDownDetails? doubleTapDetails;
   final Function(TapDownDetails) onDoubleTapDown;
+  final bool isLocked;
 
   const GestureOverlay({
     super.key,
@@ -12,24 +13,27 @@ class GestureOverlay extends StatelessWidget {
     required this.transformationController,
     required this.doubleTapDetails,
     required this.onDoubleTapDown,
+    required this.isLocked,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onDoubleTapDown: onDoubleTapDown,
+      onDoubleTapDown: isLocked ? null : onDoubleTapDown,
 
-      onDoubleTap: () {
-        if (doubleTapDetails == null) return;
+      onDoubleTap: isLocked
+          ? null
+          : () {
+              if (doubleTapDetails == null) return;
 
-        final position = doubleTapDetails!.localPosition;
+              final position = doubleTapDetails!.localPosition;
 
-        final matrix = Matrix4.identity()
-          ..translate(-position.dx, -position.dy)
-          ..scale(2);
+              final matrix = Matrix4.identity()
+                ..translate(-position.dx, -position.dy)
+                ..scale(2);
 
-        transformationController.value = matrix;
-      },
+              transformationController.value = matrix;
+            },
 
       child: InteractiveViewer(
         transformationController: transformationController,
@@ -37,8 +41,8 @@ class GestureOverlay extends StatelessWidget {
         maxScale: 5,
         boundaryMargin: const EdgeInsets.all(20),
         constrained: false,
-        panEnabled: true,
-        scaleEnabled: true,
+        panEnabled: !isLocked,
+        scaleEnabled: !isLocked,
         child: child,
       ),
     );

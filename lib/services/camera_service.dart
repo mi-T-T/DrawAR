@@ -26,6 +26,17 @@ class CameraService {
     await _controller!.initialize();
   }
 
+  Future<bool> setFlash(bool enable) async {
+    if (_controller == null) return false;
+
+    try {
+      await _controller!.setFlashMode(enable ? FlashMode.torch : FlashMode.off);
+      return true;
+    } on CameraException {
+      return false;
+    }
+  }
+
   void dispose() {
     _controller?.dispose();
   }
