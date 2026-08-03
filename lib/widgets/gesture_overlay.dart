@@ -18,32 +18,30 @@ class GestureOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onDoubleTapDown: isLocked ? null : onDoubleTapDown,
+    return SizedBox.expand(
+      child: GestureDetector(
+        onDoubleTapDown: isLocked ? null : onDoubleTapDown,
+        onDoubleTap: isLocked
+            ? null
+            : () {
+                if (doubleTapDetails == null) return;
 
-      onDoubleTap: isLocked
-          ? null
-          : () {
-              if (doubleTapDetails == null) return;
+                final position = doubleTapDetails!.localPosition;
 
-              final position = doubleTapDetails!.localPosition;
-
-              final matrix = Matrix4.identity()
-                ..translate(-position.dx, -position.dy)
-                ..scale(2);
-
-              transformationController.value = matrix;
-            },
-
-      child: InteractiveViewer(
-        transformationController: transformationController,
-        minScale: 0.5,
-        maxScale: 5,
-        boundaryMargin: const EdgeInsets.all(20),
-        constrained: false,
-        panEnabled: !isLocked,
-        scaleEnabled: !isLocked,
-        child: child,
+                transformationController.value = Matrix4.identity()
+                  ..translate(-position.dx, -position.dy)
+                  ..scale(2);
+              },
+        child: InteractiveViewer(
+          transformationController: transformationController,
+          minScale: 0.5,
+          maxScale: 5,
+          boundaryMargin: const EdgeInsets.all(500),
+          constrained: false,
+          panEnabled: !isLocked,
+          scaleEnabled: !isLocked,
+          child: Center(child: child),
+        ),
       ),
     );
   }

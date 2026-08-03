@@ -5,6 +5,7 @@ class SketchService {
   Future<Uint8List> convertToSketch(
     Uint8List imageBytes, {
     int threshold = 120,
+    bool invert = false,
   }) async {
     img.Image? image = img.decodeImage(imageBytes);
 
@@ -26,10 +27,22 @@ class SketchService {
       for (int x = 0; x < image.width; x++) {
         final pixel = image.getPixel(x, y);
 
-        if (pixel.r > threshold) {
-          image.setPixelRgb(x, y, 255, 255, 255);
+        final isEdge = pixel.r > threshold;
+
+        if (invert) {
+          // Nền trắng - nét đen
+          if (isEdge) {
+            image.setPixelRgb(x, y, 0, 0, 0);
+          } else {
+            image.setPixelRgb(x, y, 255, 255, 255);
+          }
         } else {
-          image.setPixelRgb(x, y, 0, 0, 0);
+          // Nền đen - nét trắng
+          if (isEdge) {
+            image.setPixelRgb(x, y, 255, 255, 255);
+          } else {
+            image.setPixelRgb(x, y, 0, 0, 0);
+          }
         }
       }
     }

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'image_panel.dart';
+import 'sketch_panel.dart';
 
 class ControlPanel extends StatelessWidget {
   final bool isSketchMode;
@@ -8,7 +10,12 @@ class ControlPanel extends StatelessWidget {
   final double threshold;
   final bool isFlipped;
   final bool isLocked;
+  final bool imageExpanded;
+  final bool sketchExpanded;
   final VoidCallback onFlipPressed;
+  final bool showGrid;
+  final int gridDivisions;
+  final ValueChanged<double> onGridDivisionsChanged;
 
   final bool isExpanded;
   final VoidCallback onToggleExpanded;
@@ -18,7 +25,10 @@ class ControlPanel extends StatelessWidget {
   final ValueChanged<double> onScaleChanged;
   final ValueChanged<double> onRotationChanged;
   final ValueChanged<double> onThresholdChanged;
+  final VoidCallback onToggleImage;
+  final VoidCallback onToggleSketch;
   final VoidCallback onLockPressed;
+  final ValueChanged<bool> onGridChanged;
 
   const ControlPanel({
     super.key,
@@ -29,6 +39,11 @@ class ControlPanel extends StatelessWidget {
     required this.threshold,
     required this.isFlipped,
     required this.isLocked,
+    required this.imageExpanded,
+    required this.sketchExpanded,
+    required this.showGrid,
+    required this.gridDivisions,
+    required this.onGridDivisionsChanged,
 
     required this.isExpanded,
     required this.onToggleExpanded,
@@ -40,6 +55,9 @@ class ControlPanel extends StatelessWidget {
     required this.onRotationChanged,
     required this.onThresholdChanged,
     required this.onLockPressed,
+    required this.onToggleImage,
+    required this.onToggleSketch,
+    required this.onGridChanged,
   });
 
   @override
@@ -92,93 +110,39 @@ class ControlPanel extends StatelessWidget {
                 children: [
                   const SizedBox(height: 15),
 
-                  SwitchListTile(
-                    title: const Text(
-                      "Chế độ phác thảo",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    value: isSketchMode,
-                    onChanged: onSketchChanged,
+                  ImagePanel(
+                    isExpanded: imageExpanded,
+                    isFlipped: isFlipped,
+                    isLocked: isLocked,
+
+                    showGrid: showGrid,
+                    onGridChanged: onGridChanged,
+
+                    gridDivisions: gridDivisions,
+                    onGridDivisionsChanged: onGridDivisionsChanged,
+
+                    opacity: opacity,
+                    scale: scale,
+                    rotation: rotation,
+
+                    onToggle: onToggleImage,
+                    onFlipPressed: onFlipPressed,
+                    onLockPressed: onLockPressed,
+
+                    onOpacityChanged: onOpacityChanged,
+                    onScaleChanged: onScaleChanged,
+                    onRotationChanged: onRotationChanged,
                   ),
+                  const SizedBox(height: 15),
 
-                  const SizedBox(height: 10),
-
-                  ElevatedButton.icon(
-                    onPressed: onFlipPressed,
-                    icon: const Icon(Icons.flip),
-                    label: Text(isFlipped ? "Huỷ lật ảnh" : "Lật ảnh"),
+                  SketchPanel(
+                    isExpanded: sketchExpanded,
+                    isSketchMode: isSketchMode,
+                    threshold: threshold,
+                    onToggle: onToggleSketch,
+                    onSketchChanged: onSketchChanged,
+                    onThresholdChanged: onThresholdChanged,
                   ),
-
-                  const SizedBox(height: 10),
-
-                  ElevatedButton.icon(
-                    onPressed: onLockPressed,
-                    icon: Icon(isLocked ? Icons.lock : Icons.lock_open),
-                    label: Text(isLocked ? "Mở khóa" : "Khóa ảnh"),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  const Text("Độ mờ", style: TextStyle(color: Colors.white)),
-
-                  Slider(
-                    value: opacity,
-                    min: 0.2,
-                    max: 1,
-                    divisions: 8,
-                    label: (opacity * 100).toInt().toString(),
-                    onChanged: onOpacityChanged,
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  Text(
-                    "Kích thước : ${scale.toStringAsFixed(1)}x",
-                    style: const TextStyle(color: Colors.white),
-                  ),
-
-                  Slider(
-                    value: scale,
-                    min: 0.3,
-                    max: 3,
-                    divisions: 27,
-                    label: scale.toStringAsFixed(1),
-                    onChanged: onScaleChanged,
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  Text(
-                    "Xoay : ${rotation.toInt()}°",
-                    style: const TextStyle(color: Colors.white),
-                  ),
-
-                  Slider(
-                    value: rotation,
-                    min: -180,
-                    max: 180,
-                    divisions: 360,
-                    label: "${rotation.toInt()}°",
-                    onChanged: onRotationChanged,
-                  ),
-
-                  if (isSketchMode) ...[
-                    const SizedBox(height: 10),
-
-                    Text(
-                      "Độ chi tiết : ${threshold.toInt()}",
-                      style: const TextStyle(color: Colors.white),
-                    ),
-
-                    Slider(
-                      value: threshold,
-                      min: 20,
-                      max: 250,
-                      divisions: 230,
-                      label: threshold.toInt().toString(),
-                      onChanged: onThresholdChanged,
-                    ),
-                  ],
                 ],
               ),
 
