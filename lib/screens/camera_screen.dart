@@ -415,115 +415,124 @@ class _CameraScreenState extends State<CameraScreen> {
                   left: 10,
                   right: 10,
                   bottom: 20,
-                  child: ControlPanel(
-                    isSketchMode: _isSketchMode,
-                    opacity: _opacity,
-                    scale: _scale,
-                    rotation: _rotation,
-                    threshold: _threshold,
-                    invert: _invertSketch,
-                    isFlipped: _isFlipped,
-                    isLocked: _isLocked,
-                    showGrid: _showGrid,
-                    gridDivisions: _gridDivisions,
+                  child: SafeArea(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxHeight: MediaQuery.of(context).size.height * 0.68,
+                      ),
+                      child: SingleChildScrollView(
+                        child: ControlPanel(
+                          isSketchMode: _isSketchMode,
+                          opacity: _opacity,
+                          scale: _scale,
+                          rotation: _rotation,
+                          threshold: _threshold,
+                          invert: _invertSketch,
+                          isFlipped: _isFlipped,
+                          isLocked: _isLocked,
+                          showGrid: _showGrid,
+                          gridDivisions: _gridDivisions,
 
-                    isExpanded: _isPanelExpanded,
-                    imageExpanded: _imageExpanded,
-                    sketchExpanded: _sketchExpanded,
+                          isExpanded: _isPanelExpanded,
+                          imageExpanded: _imageExpanded,
+                          sketchExpanded: _sketchExpanded,
 
-                    onToggleExpanded: () {
-                      setState(() {
-                        _isPanelExpanded = !_isPanelExpanded;
-                      });
-                    },
+                          onToggleExpanded: () {
+                            setState(() {
+                              _isPanelExpanded = !_isPanelExpanded;
+                            });
+                          },
 
-                    onToggleImage: () {
-                      setState(() {
-                        _imageExpanded = !_imageExpanded;
-                      });
-                    },
+                          onToggleImage: () {
+                            setState(() {
+                              _imageExpanded = !_imageExpanded;
+                            });
+                          },
 
-                    onToggleSketch: () {
-                      setState(() {
-                        _sketchExpanded = !_sketchExpanded;
-                      });
-                    },
+                          onToggleSketch: () {
+                            setState(() {
+                              _sketchExpanded = !_sketchExpanded;
+                            });
+                          },
 
-                    onFlipPressed: () {
-                      setState(() {
-                        _isFlipped = !_isFlipped;
-                      });
-                    },
+                          onFlipPressed: () {
+                            setState(() {
+                              _isFlipped = !_isFlipped;
+                            });
+                          },
 
-                    onLockPressed: () {
-                      setState(() {
-                        _isLocked = !_isLocked;
-                      });
-                    },
+                          onLockPressed: () {
+                            setState(() {
+                              _isLocked = !_isLocked;
+                            });
+                          },
 
-                    onGridChanged: (value) {
-                      setState(() {
-                        _showGrid = value;
-                      });
-                    },
+                          onGridChanged: (value) {
+                            setState(() {
+                              _showGrid = value;
+                            });
+                          },
 
-                    onGridDivisionsChanged: (value) {
-                      setState(() {
-                        _gridDivisions = value.toInt();
-                      });
-                    },
+                          onGridDivisionsChanged: (value) {
+                            setState(() {
+                              _gridDivisions = value.toInt();
+                            });
+                          },
 
-                    onSketchChanged: (value) async {
-                      setState(() {
-                        _isSketchMode = value;
-                      });
+                          onSketchChanged: (value) async {
+                            setState(() {
+                              _isSketchMode = value;
+                            });
 
-                      if (_originalImage == null) return;
+                            if (_originalImage == null) return;
 
-                      if (_isSketchMode) {
-                        await _updateSketch();
-                      } else {
-                        setState(() {
-                          _processedImage = null;
-                        });
-                      }
-                    },
+                            if (_isSketchMode) {
+                              await _updateSketch();
+                            } else {
+                              setState(() {
+                                _processedImage = null;
+                              });
+                            }
+                          },
 
-                    onOpacityChanged: (value) {
-                      setState(() {
-                        _opacity = value;
-                      });
-                    },
+                          onOpacityChanged: (value) {
+                            setState(() {
+                              _opacity = value;
+                            });
+                          },
 
-                    onScaleChanged: (value) {
-                      setState(() {
-                        _scale = value;
-                      });
-                    },
+                          onScaleChanged: (value) {
+                            setState(() {
+                              _scale = value;
+                            });
+                          },
 
-                    onRotationChanged: (value) {
-                      setState(() {
-                        _rotation = value;
-                      });
-                    },
+                          onRotationChanged: (value) {
+                            setState(() {
+                              _rotation = value;
+                            });
+                          },
 
-                    onThresholdChanged: (value) async {
-                      setState(() {
-                        _threshold = value;
-                      });
+                          onThresholdChanged: (value) async {
+                            setState(() {
+                              _threshold = value;
+                            });
 
-                      await _updateSketch();
-                    },
+                            await _updateSketch();
+                          },
 
-                    onInvertChanged: (value) async {
-                      setState(() {
-                        _invertSketch = value;
-                      });
+                          onInvertChanged: (value) async {
+                            setState(() {
+                              _invertSketch = value;
+                            });
 
-                      if (_originalImage != null && _isSketchMode) {
-                        await _updateSketch();
-                      }
-                    },
+                            if (_originalImage != null && _isSketchMode) {
+                              await _updateSketch();
+                            }
+                          },
+                        ),
+                      ),
+                    ),
                   ),
                 ),
             ],
