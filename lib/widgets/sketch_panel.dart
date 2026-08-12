@@ -80,7 +80,7 @@ class SketchPanel extends StatelessWidget {
 
             Slider(
               value: threshold,
-              min: 0,
+              min: 20,
               max: 255,
               divisions: 255,
               label: threshold.toInt().toString(),

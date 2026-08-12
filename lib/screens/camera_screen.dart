@@ -81,7 +81,54 @@ class _CameraScreenState extends State<CameraScreen> {
 
   double _rotation = 0;
 
+  Offset _imagePosition = Offset.zero;
+
+  double _gestureStartScale = 1.0;
+  double _gestureStartRotation = 0.0;
+
+  Offset _gestureStartPosition = Offset.zero;
+
+  double _gestureStartAngle = 0.0;
+
   double _threshold = 120;
+
+  void _onScaleStart(ScaleStartDetails details) {
+    if (_isLocked) return;
+
+    _gestureStartScale = _scale;
+    _gestureStartRotation = _rotation;
+
+    _gestureStartPosition = _imagePosition;
+
+    _gestureStartAngle = 0.0;
+  }
+
+  void _onScaleUpdate(ScaleUpdateDetails details) {
+    if (_isLocked) return;
+
+    setState(() {
+      // =========================
+      // 1. DI CHUYỂN ẢNH
+      // =========================
+
+      _imagePosition += details.focalPointDelta;
+
+      // =========================
+      // 2. ZOOM + XOAY
+      // =========================
+
+      if (details.pointerCount >= 2) {
+        _scale = (_gestureStartScale * details.scale).clamp(0.5, 5.0);
+
+        _rotation =
+            _gestureStartRotation + details.rotation * 180 / 3.1415926535;
+      }
+    });
+  }
+
+  void _onScaleEnd(ScaleEndDetails details) {
+    if (_isLocked) return;
+  }
 
   @override
   void initState() {
@@ -277,14 +324,14 @@ class _CameraScreenState extends State<CameraScreen> {
               if (_originalImage != null)
                 Center(
                   child: GestureOverlay(
-                    transformationController: _transformationController,
-                    doubleTapDetails: _doubleTapDetails,
-
                     isLocked: _isLocked,
 
-                    onDoubleTapDown: (details) {
-                      _doubleTapDetails = details;
-                    },
+                    onScaleStart: _onScaleStart,
+
+                    onScaleUpdate: _onScaleUpdate,
+
+                    onScaleEnd: _onScaleEnd,
+
                     child: ImageOverlay(
                       originalImage: _originalImage,
                       processedImage: _processedImage,
@@ -293,6 +340,7 @@ class _CameraScreenState extends State<CameraScreen> {
                       scale: _scale,
                       rotation: _rotation,
                       isFlipped: _isFlipped,
+                      position: _imagePosition,
                     ),
                   ),
                 ),
@@ -312,11 +360,10 @@ class _CameraScreenState extends State<CameraScreen> {
                   },
 
                   onResetPressed: () {
-                    _transformationController.value = Matrix4.identity();
-
                     setState(() {
                       _rotation = 0;
                       _scale = 1.0;
+                      _imagePosition = Offset.zero;
                     });
                   },
 

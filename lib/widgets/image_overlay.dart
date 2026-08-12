@@ -11,6 +11,7 @@ class ImageOverlay extends StatelessWidget {
   final double scale;
   final double rotation;
   final bool isFlipped;
+  final Offset position;
 
   const ImageOverlay({
     super.key,
@@ -21,6 +22,7 @@ class ImageOverlay extends StatelessWidget {
     required this.scale,
     required this.rotation,
     required this.isFlipped,
+    required this.position,
   });
 
   @override
@@ -29,20 +31,20 @@ class ImageOverlay extends StatelessWidget {
       return const SizedBox();
     }
 
-    return Transform(
-      alignment: Alignment.center,
-      transform: Matrix4.identity()
-        ..scale(isFlipped ? -1.0 : 1.0, 1.0)
-        ..rotateZ(rotation * 3.1415926535 / 180),
-      child: Transform.scale(
-        scale: scale,
+    return Transform.translate(
+      offset: position,
+      child: Transform(
+        alignment: Alignment.center,
+        transform: Matrix4.identity()
+          ..scale(isFlipped ? -scale : scale, scale)
+          ..rotateZ(rotation * 3.1415926535 / 180),
         child: Opacity(
           opacity: opacity,
           child: isSketchMode
               ? (processedImage != null
-                    ? Image.memory(processedImage!)
+                    ? Image.memory(processedImage!, fit: BoxFit.contain)
                     : const CircularProgressIndicator())
-              : Image.file(originalImage!),
+              : Image.file(originalImage!, fit: BoxFit.contain),
         ),
       ),
     );
