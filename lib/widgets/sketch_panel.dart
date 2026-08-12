@@ -4,20 +4,24 @@ class SketchPanel extends StatelessWidget {
   final bool isExpanded;
   final bool isSketchMode;
   final double threshold;
+  final bool invert;
 
   final VoidCallback onToggle;
 
   final ValueChanged<bool> onSketchChanged;
   final ValueChanged<double> onThresholdChanged;
+  final ValueChanged<bool> onInvertChanged;
 
   const SketchPanel({
     super.key,
     required this.isExpanded,
     required this.isSketchMode,
     required this.threshold,
+    required this.invert,
     required this.onToggle,
     required this.onSketchChanged,
     required this.onThresholdChanged,
+    required this.onInvertChanged,
   });
 
   @override
@@ -58,16 +62,27 @@ class SketchPanel extends StatelessWidget {
           if (isSketchMode) ...[
             const SizedBox(height: 10),
 
+            SwitchListTile(
+              title: const Text(
+                "Nền trắng",
+                style: TextStyle(color: Colors.white),
+              ),
+              value: invert,
+              onChanged: onInvertChanged,
+            ),
+
+            const SizedBox(height: 10),
+
             Text(
-              "Độ chi tiết : ${threshold.toInt()}",
+              "Độ nhạy : ${threshold.toInt()}",
               style: const TextStyle(color: Colors.white),
             ),
 
             Slider(
               value: threshold,
-              min: 20,
-              max: 250,
-              divisions: 230,
+              min: 0,
+              max: 255,
+              divisions: 255,
               label: threshold.toInt().toString(),
               onChanged: onThresholdChanged,
             ),

@@ -1,24 +1,24 @@
 import 'dart:ui' as ui;
-import 'package:flutter/rendering.dart';
-import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
-
 import 'dart:io';
 import 'dart:typed_data';
+import 'dart:async';
 
+import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
 import 'package:camera/camera.dart';
+
+import 'package:flutter/rendering.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../services/camera_service.dart';
 import '../services/image_service.dart';
 import '../services/sketch_service.dart';
+import '../services/shared_image_service.dart';
+
 import '../widgets/control_panel.dart';
 import '../widgets/image_overlay.dart';
-
 import '../widgets/gesture_overlay.dart';
-
 import '../widgets/camera_buttons.dart';
-import 'dart:async';
-
 import '../widgets/grid_overlay.dart';
 import '../widgets/more_menu.dart';
 
@@ -27,7 +27,12 @@ import '../screens/ai_screen.dart';
 final GlobalKey _captureKey = GlobalKey();
 
 class CameraScreen extends StatefulWidget {
-  const CameraScreen({super.key});
+  final String? selectedImage; // 1. Khai báo biến lưu link/path ảnh ở đây
+
+  const CameraScreen({
+    super.key,
+    this.selectedImage, // 2. Thêm vào constructor (dùng this.selectedImage)
+  });
 
   @override
   State<CameraScreen> createState() => _CameraScreenState();
@@ -47,6 +52,8 @@ class _CameraScreenState extends State<CameraScreen> {
   Uint8List? _processedImage;
 
   bool _isSketchMode = false;
+
+  bool _invertSketch = false;
 
   bool _showGrid = false;
 
@@ -79,7 +86,9 @@ class _CameraScreenState extends State<CameraScreen> {
   @override
   void initState() {
     super.initState();
+
     _initializeCamera();
+    _loadSelectedImage();
   }
 
   void _startHideTimer() {
@@ -104,6 +113,40 @@ class _CameraScreenState extends State<CameraScreen> {
     _startHideTimer();
   }
 
+  Future<void> _loadSelectedImage() async {
+    if (widget.selectedImage == null) return;
+
+    try {
+      final byteData = await rootBundle.load(widget.selectedImage!);
+
+      final tempDir = Directory.systemTemp;
+
+      final file = File(
+        '${tempDir.path}/selected_image_${DateTime.now().millisecondsSinceEpoch}.jpg',
+      );
+
+      await file.writeAsBytes(byteData.buffer.asUint8List());
+
+      _originalImage = file;
+
+      if (_isSketchMode) {
+        final bytes = await file.readAsBytes();
+
+        _processedImage = await _sketchService.convertToSketch(
+          bytes,
+          threshold: _threshold.toInt(),
+          invert: _invertSketch,
+        );
+      }
+
+      if (mounted) {
+        setState(() {});
+      }
+    } catch (e) {
+      debugPrint('Lỗi tải ảnh asset: $e');
+    }
+  }
+
   Future<void> _initializeCamera() async {
     await _cameraService.initializeCamera();
 
@@ -126,7 +169,7 @@ class _CameraScreenState extends State<CameraScreen> {
       _processedImage = await _sketchService.convertToSketch(
         bytes,
         threshold: _threshold.toInt(),
-        invert: false,
+        invert: _invertSketch,
       );
     } else {
       _processedImage = null;
@@ -143,7 +186,7 @@ class _CameraScreenState extends State<CameraScreen> {
     _processedImage = await _sketchService.convertToSketch(
       bytes,
       threshold: _threshold.toInt(),
-      invert: false,
+      invert: _invertSketch,
     );
 
     setState(() {});
@@ -287,13 +330,29 @@ class _CameraScreenState extends State<CameraScreen> {
                     showDialog(
                       context: context,
                       builder: (_) => MoreMenu(
-                        onAI: () {
+                        onAI: () async {
                           Navigator.pop(context);
 
-                          Navigator.push(
+                          // Xóa dữ liệu AI cũ trước khi mở
+                          SharedImageService.clear();
+
+                          await Navigator.push(
                             context,
                             MaterialPageRoute(builder: (_) => const AIScreen()),
                           );
+
+                          // Nếu AI đã tạo ảnh thì lấy về Camera
+                          if (SharedImageService.processedImage != null) {
+                            setState(() {
+                              _originalImage = SharedImageService.originalImage;
+                              _processedImage =
+                                  SharedImageService.processedImage;
+                              _isSketchMode = true;
+                            });
+
+                            // Dọn bộ nhớ để lần sau không lấy lại ảnh cũ
+                            SharedImageService.clear();
+                          }
                         },
 
                         onClose: () {
@@ -316,6 +375,7 @@ class _CameraScreenState extends State<CameraScreen> {
                     scale: _scale,
                     rotation: _rotation,
                     threshold: _threshold,
+                    invert: _invertSketch,
                     isFlipped: _isFlipped,
                     isLocked: _isLocked,
                     showGrid: _showGrid,
@@ -407,6 +467,16 @@ class _CameraScreenState extends State<CameraScreen> {
                       });
 
                       await _updateSketch();
+                    },
+
+                    onInvertChanged: (value) async {
+                      setState(() {
+                        _invertSketch = value;
+                      });
+
+                      if (_originalImage != null && _isSketchMode) {
+                        await _updateSketch();
+                      }
                     },
                   ),
                 ),

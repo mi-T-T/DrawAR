@@ -8,6 +8,7 @@ class ControlPanel extends StatelessWidget {
   final double scale;
   final double rotation;
   final double threshold;
+  final bool invert;
   final bool isFlipped;
   final bool isLocked;
   final bool imageExpanded;
@@ -25,6 +26,7 @@ class ControlPanel extends StatelessWidget {
   final ValueChanged<double> onScaleChanged;
   final ValueChanged<double> onRotationChanged;
   final ValueChanged<double> onThresholdChanged;
+  final ValueChanged<bool> onInvertChanged;
   final VoidCallback onToggleImage;
   final VoidCallback onToggleSketch;
   final VoidCallback onLockPressed;
@@ -37,6 +39,7 @@ class ControlPanel extends StatelessWidget {
     required this.scale,
     required this.rotation,
     required this.threshold,
+    required this.invert,
     required this.isFlipped,
     required this.isLocked,
     required this.imageExpanded,
@@ -54,6 +57,7 @@ class ControlPanel extends StatelessWidget {
     required this.onScaleChanged,
     required this.onRotationChanged,
     required this.onThresholdChanged,
+    required this.onInvertChanged,
     required this.onLockPressed,
     required this.onToggleImage,
     required this.onToggleSketch,
@@ -139,9 +143,12 @@ class ControlPanel extends StatelessWidget {
                     isExpanded: sketchExpanded,
                     isSketchMode: isSketchMode,
                     threshold: threshold,
+                    invert: invert,
+
                     onToggle: onToggleSketch,
                     onSketchChanged: onSketchChanged,
                     onThresholdChanged: onThresholdChanged,
+                    onInvertChanged: onInvertChanged,
                   ),
                 ],
               ),

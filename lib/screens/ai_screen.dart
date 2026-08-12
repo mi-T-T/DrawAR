@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'line_art_screen.dart';
 
-class AIScreen extends StatelessWidget {
+class AIScreen extends StatefulWidget {
   const AIScreen({super.key});
 
+  @override
+  State<AIScreen> createState() => _AIScreenState();
+}
+
+class _AIScreenState extends State<AIScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -31,8 +36,8 @@ class AIScreen extends StatelessWidget {
               title: const Text("Chuyển nét vẽ"),
               subtitle: const Text("Biến ảnh thành nét vẽ bằng AI"),
               trailing: const Icon(Icons.arrow_forward_ios),
-              onTap: () {
-                Navigator.push(
+              onTap: () async {
+                await Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const LineArtScreen()),
                 );

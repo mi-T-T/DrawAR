@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../services/sketch_service.dart';
+import '../services/shared_image_service.dart';
 
 class LineArtScreen extends StatefulWidget {
   const LineArtScreen({super.key});
@@ -67,10 +68,14 @@ class _LineArtScreenState extends State<LineArtScreen> {
             SwitchListTile(
               title: const Text("Nền trắng"),
               value: _invert,
-              onChanged: (value) {
+              onChanged: (value) async {
                 setState(() {
                   _invert = value;
                 });
+
+                if (_processedImage != null) {
+                  await _generateSketch();
+                }
               },
             ),
 
@@ -184,7 +189,19 @@ class _LineArtScreenState extends State<LineArtScreen> {
               child: ElevatedButton.icon(
                 icon: const Icon(Icons.check_circle),
                 label: const Text("Dùng trong Camera"),
-                onPressed: null,
+                onPressed: _processedImage == null
+                    ? null
+                    : () {
+                        SharedImageService.originalImage = _selectedImage;
+
+                        SharedImageService.processedImage = _processedImage;
+
+                        SharedImageService.isSketchMode = true;
+
+                        SharedImageService.invert = _invert;
+
+                        Navigator.pop(context);
+                      },
               ),
             ),
           ],
