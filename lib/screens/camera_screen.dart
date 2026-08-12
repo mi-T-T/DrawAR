@@ -264,7 +264,6 @@ class _CameraScreenState extends State<CameraScreen> {
       body: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: _showUI,
-        onPanDown: (_) => _showUI(),
         child: RepaintBoundary(
           key: _captureKey,
           child: Stack(
